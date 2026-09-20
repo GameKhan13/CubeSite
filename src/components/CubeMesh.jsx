@@ -4,6 +4,8 @@ import { Edges } from '@react-three/drei'
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
 function CubeMesh() {
+    const defaultState = faceColors.map(color => Array(9).fill(color));
+
     // build array
     const cubeCoords = [];
     const possiblePositions = [-1, 0, 1]
@@ -17,31 +19,25 @@ function CubeMesh() {
 
     return (
         <>
-            {
-                cubeCoords.map((coord) => (
-                <SingleCube 
-                    position={coord}
-                    sides={[
-                        coord[0] === 1,
-                        coord[0] === -1,
-                        coord[1] === 1,
-                        coord[1] === -1,
-                        coord[2] === 1,
-                        coord[2] === -1
-                    ]}
-                />
-            ))}
+            <SingleCube id='cube-root'>
+                <group>
+                    <SingleCube id='cube-right' position={[1, 0, 0]} />
+                    <SingleCube id='cube-left' position={[-1, 0, 0]} />
+                    <SingleCube id='cube-top' position={[0, 1, 0]} />
+                    <SingleCube id='cube-bottom' position={[0, -1, 0]} />
+                    <SingleCube id='cube-front' position={[0, 0, 1]} />
+                    <SingleCube id='cube-back' position={[0, 0, -1]} />
+                </group>
+            </SingleCube>
         </>
     )
 }
 
-function SingleCube({ position, sides }) {
-    function brightnessUp() {
-        
-    }
+function SingleCube({ position=[0, 0, 0], sides=[false, false, false, false, false, false], children }) {
+
 
     return (
-        <mesh position={position} onPointerOver={brightnessUp}>
+        <mesh position={position}>
             <boxGeometry args={[1, 1, 1]} />
             {
                 faceColors.map((color, index) => (
@@ -52,6 +48,7 @@ function SingleCube({ position, sides }) {
                 />
             ))}
             <Edges lineWidth={5} scale={1.01} color='black' />
+            {children}
         </mesh>
     )
 }
