@@ -5,13 +5,18 @@ import { useMemo } from 'react';
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
 function calculateCubeCoords(dimensions) {
-    const cubeSize = 1/Math.max(...dimensions)
+    const biggestDim = Math.max(...dimensions)
+    const cubeSize = 1/biggestDim
     const cubeCoords = []
 
     for (let x = 0; x < dimensions[0]; x++) {
         for (let y = 0; y < dimensions[1]; y++) {
             for (let z = 0; z < dimensions[2]; z++) {
-                cubeCoords.push([(x+0.5)*cubeSize, (y+0.5)*cubeSize, (z+0.5)*cubeSize])
+                cubeCoords.push([
+                    (x+(1+biggestDim-dimensions[0])*0.5)*cubeSize, 
+                    (y+(1+biggestDim-dimensions[1])*0.5)*cubeSize, 
+                    (z+(1+biggestDim-dimensions[2])*0.5)*cubeSize
+                ])
             }
         }
     }
@@ -33,33 +38,28 @@ function CubeMesh({dimensions=[3, 3, 3]}) {
                 key={index}
                 position={coord} 
                 size={cubeSize}
+                dimensions={dimensions}
                 />
             ))}
         </mesh>
     )
 }
 
-function SingleCube({ position=[0, 0, 0], size=1 }) {
-    function isEdge(position, index) {
-        switch (index) {
-            case 0:
-                return position[0] > 1-size
-            case 1:
-                return position[0] < size
-            case 2:
-                return position[1] > 1-size
-            case 3:
-                return position[1] < size
-            case 4:
-                return position[2] > 1-size
-            case 5:
-                return position[2] < size
-            default:
-                return true
-        }
-    }
+function SingleCube({ position=[0.5, 0.5, 0.5], size=1, dimensions=[1, 1, 1]}) {
+    const bounds = useMemo(
+        () => {
+            const maxDim = Math.max(...dimensions)
+            return dimensions.map((dim) => (maxDim-dim+1)*size)
+        }, 
+        [dimensions, size]
+    );
 
-    console.log(position, size)
+    function isEdge(index) {
+        const axis = Math.floor(index / 2) // 0-2
+        const side = index % 2 // 0-1
+
+        return (side ? position[axis] : 1-position[axis]) < bounds[axis]
+    }
 
     return (
         <mesh position={position}>
@@ -69,10 +69,10 @@ function SingleCube({ position=[0, 0, 0], size=1 }) {
                 <meshStandardMaterial 
                 key={index} 
                 attach={`material-${index}`} 
-                color={isEdge(position, index) ? faceColors[index] : 'grey'} 
+                color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges lineWidth={5} scale={1.01} color='black' />
+            <Edges key={size} lineWidth={5} scale={1.01} color='black' />
         </mesh>
     )
 }

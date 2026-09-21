@@ -12,7 +12,7 @@ export default function CubeRender() {
                 <OrbitControls enablePan={false} />
                 <Stats />
                 <ambientLight intensity={1}/>
-                <CubeMesh />
+                <CubeMesh dimensions={[3, 3, 3]}/>
             </Canvas>
         </div>
     )
