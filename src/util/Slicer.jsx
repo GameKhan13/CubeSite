@@ -12,26 +12,26 @@ export default class Slicer {
         this.y = dimensions[1] // the number of y slices
         this.z = dimensions[2] // the number of z slices
         this.maxDimension = Math.max(...dimensions) // the highest dimension
-        this.sliceSize = 1/this.maxDimension // the width of each slice
+        this.sliceSize = 2/this.maxDimension // the width of each slice
         this.xSlices = [] // the center points for each x slice
         this.ySlices = [] // the center points for each y slice
         this.zSlices = [] // the center points for each z slice
 
         for (let x = 0; x < this.x; x++) {
             this.xSlices.push(
-                (x+(1+this.maxDimension-this.x)*0.5)*this.sliceSize-0.5,
+                (x+(1+this.maxDimension-this.x)*0.5)*this.sliceSize-1,
             )
         }
 
         for (let y = 0; y < this.y; y++) {
             this.ySlices.push(
-                (y+(1+this.maxDimension-this.y)*0.5)*this.sliceSize-0.5,
+                (y+(1+this.maxDimension-this.y)*0.5)*this.sliceSize-1,
             )
         }
 
         for (let z = 0; z < this.z; z++) {
             this.zSlices.push(
-                (z+(1+this.maxDimension-this.z)*0.5)*this.sliceSize-0.5,
+                (z+(1+this.maxDimension-this.z)*0.5)*this.sliceSize-1,
             )
         }
     } 

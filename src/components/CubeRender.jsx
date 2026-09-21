@@ -13,7 +13,7 @@ export default function CubeRender({dimensions=[3, 3, 3]}) {
 
     return (
         <div id='canvas-container'>
-            <Canvas camera={{position: [1, 1, 1]}}>
+            <Canvas camera={{position: [2, 2, 2]}}>
                 <OrbitControls enablePan={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
                 <Stats />
                 <ambientLight intensity={1}/>
