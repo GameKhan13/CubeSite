@@ -2,49 +2,34 @@ import { useMemo, useState } from "react";
 import { Box3, Vector3 } from "three";
 
 
-export default function CubeControls({ dimensions }) {
+export default function CubeControls({ slicer, meshRef }) {
 
     const controlData = []
-    const biggestDim = dimensions.maxDimension
-    const cubeSize = 1/biggestDim
-
-    for (let x = 0; x < dimensions.x; x++) {
-        controlData.push([
-            (x+(1+biggestDim-dimensions.x)*0.5)*cubeSize-0.5,
-            0
-        ])
-    }
-
-    for (let y = 0; y < dimensions.y; y++) {
-        controlData.push([
-            (y+(1+biggestDim-dimensions.y)*0.5)*cubeSize-0.5,
-            1
-        ])
-    }
-
-    for (let z = 0; z < dimensions.z; z++) {
-        controlData.push([
-            (z+(1+biggestDim-dimensions.z)*0.5)*cubeSize-0.5,
-            2
-        ])
-    }
+    const biggestDim = slicer.maxDimension
+    const cubeSize = slicer.sliceSize
 
     return (
         <group>
+            <CubeControl slicer={slicer} position={0} axis={0}/>
+
             {
-                controlData.map(([position, axis], index) => 
-                <CubeControl 
-                key={index}
-                position={position}
-                axis={axis}
-                />
-                )
+                // controlData.map(([position, axis], index) => 
+                // <CubeControl 
+                // key={index}
+                // position={position}
+                // axis={axis}
+                // />
+                // )
             }
         </group>
     );
 }
 
-function CubeControl({ position, axis }) {
+function CubeControl({ slicer, position, axis }) {
+    function rotate() {
+        console.log('rotate')
+    }
+
     function getBoundingBox() {
         switch (axis) {
             case 0:
@@ -70,21 +55,33 @@ function CubeControl({ position, axis }) {
         }
     }
     
-    const boundingBox = getBoundingBox()
-
+    const boundingBox = useMemo(
+        getBoundingBox,
+        [position, axis]
+    )
+    
     return (
         <>
-            <box3Helper args={[boundingBox, 'red']}/>
-            <Clickable />
+            <Clickable box3={boundingBox} onClick={rotate}/>
         </>
     )
 }
 
-function Clickable() {
+function Clickable({ box3, onClick }) {
+    const size = useMemo(() => {
+        const vec = new Vector3();
+        box3.getSize(vec)
+        return [vec.x, vec.y, vec.z];
+    }, [box3]);
 
+    const center = useMemo(() => {
+        const vec = new Vector3();
+        box3.getCenter(vec);
+        return [vec.x, vec.y, vec.z];
+    }, [box3]);
 
-    return <mesh position={[2, 2, 2]} onClick={() => console.log('Clicked')}>
-        <boxGeometry args={[1, 1, 1]} />
+    return <mesh position={center} onClick={onClick} >
+        <boxGeometry args={size} />
         <meshStandardMaterial transparent opacity={0.5} />
     </mesh>
 }

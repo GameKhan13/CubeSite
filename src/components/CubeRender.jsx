@@ -3,19 +3,22 @@ import { Stats, OrbitControls } from '@react-three/drei'
 import './CubeRender.css'
 import CubeMesh from './CubeMesh'
 import CubeControls from './CubeControls'
-import { Dimensions } from '../util/Dimensions'
+import Slicer from '../util/Slicer'
+import { MOUSE } from 'three'
 
 export default function CubeRender({dimensions=[3, 3, 3]}) {
-    dimensions = new Dimensions(dimensions) // cast to dimensions object
-    
+    const slicer = new Slicer(dimensions) // cast to slicer object
+    console.log("Slicer:", slicer)
+    const mesh = <CubeMesh slicer={slicer}/>
+
     return (
         <div id='canvas-container'>
             <Canvas camera={{position: [1, 1, 1]}}>
-                <OrbitControls enablePan={false} />
+                <OrbitControls enablePan={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
                 <Stats />
                 <ambientLight intensity={1}/>
-                <CubeMesh dimensions={dimensions}/>
-                <CubeControls dimensions={dimensions}/>
+                {mesh}
+                <CubeControls slicer={slicer} meshRef={mesh}/>
             </Canvas>
         </div>
     )
