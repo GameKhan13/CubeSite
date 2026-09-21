@@ -5,17 +5,17 @@ import { useMemo } from 'react';
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
 function calculateCubeCoords(dimensions) {
-    const biggestDim = Math.max(...dimensions)
+    const biggestDim = dimensions.maxDimension
     const cubeSize = 1/biggestDim
     const cubeCoords = []
 
-    for (let x = 0; x < dimensions[0]; x++) {
-        for (let y = 0; y < dimensions[1]; y++) {
-            for (let z = 0; z < dimensions[2]; z++) {
+    for (let x = 0; x < dimensions.x; x++) {
+        for (let y = 0; y < dimensions.y; y++) {
+            for (let z = 0; z < dimensions.z; z++) {
                 cubeCoords.push([
-                    (x+(1+biggestDim-dimensions[0])*0.5)*cubeSize, 
-                    (y+(1+biggestDim-dimensions[1])*0.5)*cubeSize, 
-                    (z+(1+biggestDim-dimensions[2])*0.5)*cubeSize
+                    (x+(1+biggestDim-dimensions.x)*0.5)*cubeSize, 
+                    (y+(1+biggestDim-dimensions.y)*0.5)*cubeSize, 
+                    (z+(1+biggestDim-dimensions.z)*0.5)*cubeSize
                 ])
             }
         }
@@ -24,7 +24,7 @@ function calculateCubeCoords(dimensions) {
     return {cubeSize, cubeCoords}
 }
 
-function CubeMesh({dimensions=[3, 3, 3]}) {
+function CubeMesh({ dimensions }) {
     const { cubeSize, cubeCoords } = useMemo(
         () => calculateCubeCoords(dimensions),
         [dimensions]
@@ -45,12 +45,9 @@ function CubeMesh({dimensions=[3, 3, 3]}) {
     )
 }
 
-function SingleCube({ position=[0.5, 0.5, 0.5], size=1, dimensions=[1, 1, 1]}) {
+function SingleCube({ position, size, dimensions }) {
     const bounds = useMemo(
-        () => {
-            const maxDim = Math.max(...dimensions)
-            return dimensions.map((dim) => (maxDim-dim+1)*size)
-        }, 
+        () => dimensions.dimensions.map((dim) => (dimensions.maxDimension-dim+1)*size),
         [dimensions, size]
     );
 
