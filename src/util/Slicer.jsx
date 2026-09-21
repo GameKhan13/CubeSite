@@ -19,19 +19,19 @@ export default class Slicer {
 
         for (let x = 0; x < this.x; x++) {
             this.xSlices.push(
-                (x+(1+this.maxDimension-this.x)*0.5)*this.sliceSize-1,
+                (x+(1-this.x)*0.5)*this.sliceSize,
             )
         }
 
         for (let y = 0; y < this.y; y++) {
             this.ySlices.push(
-                (y+(1+this.maxDimension-this.y)*0.5)*this.sliceSize-1,
+                (y+(1-this.y)*0.5)*this.sliceSize,
             )
         }
 
         for (let z = 0; z < this.z; z++) {
             this.zSlices.push(
-                (z+(1+this.maxDimension-this.z)*0.5)*this.sliceSize-1,
+                (z+(1-this.z)*0.5)*this.sliceSize,
             )
         }
     } 

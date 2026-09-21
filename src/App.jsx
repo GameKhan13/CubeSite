@@ -7,7 +7,7 @@ export default function App() {
 
   return (
     <>
-      <CubeRender dimensions={[3, 4, 3]}/>
+      <CubeRender dimensions={[3, 2, 4]}/>
     </>
   )
 }
