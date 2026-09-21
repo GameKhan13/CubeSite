@@ -1,54 +1,78 @@
 import { Edges } from '@react-three/drei'
+import { useMemo } from 'react';
 
 // right, left, top, bottom, front, back
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
-function CubeMesh() {
-    const defaultState = faceColors.map(color => Array(9).fill(color));
+function calculateCubeCoords(dimensions) {
+    const biggestDim = Math.max(...dimensions)
+    const cubeSize = 1/biggestDim
+    const cubeCoords = []
 
-    // build array
-    const cubeCoords = [];
-    const possiblePositions = [-1, 0, 1]
-    for (const x of possiblePositions) {
-        for (const y of possiblePositions) {
-            for (const z of possiblePositions) {
-                cubeCoords.push([x, y, z])
+    for (let x = 0; x < dimensions[0]; x++) {
+        for (let y = 0; y < dimensions[1]; y++) {
+            for (let z = 0; z < dimensions[2]; z++) {
+                cubeCoords.push([
+                    (x+(1+biggestDim-dimensions[0])*0.5)*cubeSize, 
+                    (y+(1+biggestDim-dimensions[1])*0.5)*cubeSize, 
+                    (z+(1+biggestDim-dimensions[2])*0.5)*cubeSize
+                ])
             }
         }
     }
 
+    return {cubeSize, cubeCoords}
+}
+
+function CubeMesh({dimensions=[3, 3, 3]}) {
+    const { cubeSize, cubeCoords } = useMemo(
+        () => calculateCubeCoords(dimensions),
+        [dimensions]
+    )
+
     return (
-        <>
-            <SingleCube id='cube-root'>
-                <group>
-                    <SingleCube id='cube-right' position={[1, 0, 0]} />
-                    <SingleCube id='cube-left' position={[-1, 0, 0]} />
-                    <SingleCube id='cube-top' position={[0, 1, 0]} />
-                    <SingleCube id='cube-bottom' position={[0, -1, 0]} />
-                    <SingleCube id='cube-front' position={[0, 0, 1]} />
-                    <SingleCube id='cube-back' position={[0, 0, -1]} />
-                </group>
-            </SingleCube>
-        </>
+        <mesh position={[-0.5, -0.5, -0.5]}>
+            {
+                cubeCoords.map((coord, index) => (
+                <SingleCube 
+                key={index}
+                position={coord} 
+                size={cubeSize}
+                dimensions={dimensions}
+                />
+            ))}
+        </mesh>
     )
 }
 
-function SingleCube({ position=[0, 0, 0], sides=[false, false, false, false, false, false], children }) {
+function SingleCube({ position=[0.5, 0.5, 0.5], size=1, dimensions=[1, 1, 1]}) {
+    const bounds = useMemo(
+        () => {
+            const maxDim = Math.max(...dimensions)
+            return dimensions.map((dim) => (maxDim-dim+1)*size)
+        }, 
+        [dimensions, size]
+    );
 
+    function isEdge(index) {
+        const axis = Math.floor(index / 2) // 0-2
+        const side = index % 2 // 0-1
+
+        return (side ? position[axis] : 1-position[axis]) < bounds[axis]
+    }
 
     return (
         <mesh position={position}>
-            <boxGeometry args={[1, 1, 1]} />
+            <boxGeometry args={[size, size, size]} />
             {
                 faceColors.map((color, index) => (
                 <meshStandardMaterial 
                 key={index} 
                 attach={`material-${index}`} 
-                color={sides[index] ? color : 'grey'} 
+                color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges lineWidth={5} scale={1.01} color='black' />
-            {children}
+            <Edges key={size} lineWidth={5} scale={1.01} color='black' />
         </mesh>
     )
 }
