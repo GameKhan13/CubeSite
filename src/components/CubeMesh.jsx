@@ -49,7 +49,7 @@ function SingleCube({ position, slicer }) {
     }
 
     return (
-        <mesh position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
+        <mesh key={slicer.dimensions.join('')} position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
             <boxGeometry args={new Array(3).fill(slicer.sliceSize)} />
             {
                 faceColors.map((color, index) => (
@@ -59,7 +59,7 @@ function SingleCube({ position, slicer }) {
                 color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges key={generateUUID()} lineWidth={5} scale={1.01} color='black' />
+            <Edges lineWidth={5} scale={1.01} color='black' />
         </mesh>
     )
 }
