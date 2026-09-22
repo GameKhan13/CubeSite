@@ -101,6 +101,23 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         },
         [slicer, axis, position]
     )
+
+    const properHits = useMemo(
+        () => {
+            switch (axis) {
+                case 0:
+                    return slicer.y * slicer.z
+                case 1:
+                    return slicer.x * slicer.z
+                case 2:
+                    return slicer.x * slicer.y
+                default:
+                    return 0
+            }
+        },
+        [axis, slicer]
+    )
+
     const center = useMemo(
         () => {
             const center = new Vector3()
@@ -120,13 +137,15 @@ function CubeControl({ slicer, axis, position, meshRef }) {
             }
         });
 
-        const offSet = new Vector3()
-        intersecting.forEach((cube) => {
-            offSet.copy(cube.position).sub(center)
-            offSet.applyQuaternion(rotationQuarternion)
-            cube.position.copy(center).add(offSet)
-            cube.quaternion.premultiply(rotationQuarternion)
-        });
+        if (intersecting.length === properHits) {
+            const offSet = new Vector3()
+            intersecting.forEach((cube) => {
+                offSet.copy(cube.position).sub(center)
+                offSet.applyQuaternion(rotationQuarternion)
+                cube.position.copy(center).add(offSet)
+                cube.quaternion.premultiply(rotationQuarternion)
+            });
+        }
     }
     
     return (
