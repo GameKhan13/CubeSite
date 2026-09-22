@@ -59,7 +59,7 @@ function SingleCube({ position, slicer }) {
                 color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges lineWidth={5} scale={1.01} color='black' />
+            <Edges lineWidth={10*slicer.sliceSize} scale={1.01} color='black' />
         </mesh>
     )
 }

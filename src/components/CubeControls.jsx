@@ -240,7 +240,7 @@ function CubeControl({ slicer, axis, position, meshRef }) {
     return (
         <>
             <mesh position={center}>
-                <boxGeometry args={size.toArray()} />
+                <boxGeometry args={size.addScalar(slicer.sliceSize*0.1).toArray()} />
                 <meshStandardMaterial transparent opacity={(highlighted ? 0.85 : 0)} depthWrite={false} />
             </mesh>
             <mesh

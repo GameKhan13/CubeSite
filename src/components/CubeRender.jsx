@@ -6,7 +6,6 @@ import CubeControls from './CubeControls'
 import Slicer from '../util/Slicer'
 import { MOUSE } from 'three'
 import { useRef } from 'react'
-import { generateUUID } from 'three/src/math/MathUtils.js'
 
 export default function CubeRender({dimensions=[3, 3, 3]}) {
     const slicer = new Slicer(dimensions) // cast to slicer object
@@ -16,7 +15,7 @@ export default function CubeRender({dimensions=[3, 3, 3]}) {
     return (
         <div id='canvas-container'>
             <Canvas camera={{position: [2, 2, 2]}}>
-                <OrbitControls enablePan={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
+                <OrbitControls enablePan={false} enableZoom={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
                 <Stats />
                 <ambientLight intensity={1}/>
                 <CubeMesh slicer={slicer} ref={mesh}/>
