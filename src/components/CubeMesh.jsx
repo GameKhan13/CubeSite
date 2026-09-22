@@ -1,34 +1,34 @@
 import { Edges } from '@react-three/drei'
-import { useMemo } from 'react';
-import { Vector3 } from 'three';
+import { forwardRef, useMemo } from 'react';
+import { Sphere } from 'three';
+import { generateUUID } from 'three/src/math/MathUtils.js';
 
 // right, left, top, bottom, front, back
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
-export default function CubeMesh({ slicer }) {
-    function calculateCubeCoords() {
-        const cubeCoords = []
+const CubeMesh = forwardRef(({ slicer }, ref) => {
+    const cubeCoords = useMemo(
+        () => {
+            const cubeCoords = []
 
-        for (let x = 0; x < slicer.x; x++) {
-            for (let y = 0; y < slicer.y; y++) {
-                for (let z = 0; z < slicer.z; z++) {
-                    cubeCoords.push(
-                        [x, y, z]
-                    )
+            for (let x = 0; x < slicer.x; x++) {
+                for (let y = 0; y < slicer.y; y++) {
+                    for (let z = 0; z < slicer.z; z++) {
+                        cubeCoords.push(
+                            [x, y, z]
+                        )
+                    }
                 }
             }
-        }
 
-        return cubeCoords
-    }
-    const cubeCoords = useMemo(
-        calculateCubeCoords,
+            return cubeCoords
+        },
         [slicer]
     )
 
     return (
-        <mesh>
-            {   
+        <mesh ref={ref}>
+            {
                 cubeCoords.map((position, index) => (
                 <SingleCube 
                 key={index}
@@ -39,7 +39,7 @@ export default function CubeMesh({ slicer }) {
             }
         </mesh>
     )
-}
+})
 
 function SingleCube({ position, slicer }) {
     function isEdge(index) {
@@ -59,7 +59,9 @@ function SingleCube({ position, slicer }) {
                 color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges key={slicer.sliceSize} lineWidth={5} scale={1.01} color='black' />
+            <Edges key={generateUUID()} lineWidth={5} scale={1.01} color='black' />
         </mesh>
     )
 }
+
+export default CubeMesh
