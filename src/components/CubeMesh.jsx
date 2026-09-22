@@ -1,69 +1,56 @@
 import { Edges } from '@react-three/drei'
-import { useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
+import { Sphere } from 'three';
+import { generateUUID } from 'three/src/math/MathUtils.js';
 
 // right, left, top, bottom, front, back
 const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
 
-function calculateCubeCoords(dimensions) {
-    const biggestDim = Math.max(...dimensions)
-    const cubeSize = 1/biggestDim
-    const cubeCoords = []
+const CubeMesh = forwardRef(({ slicer }, ref) => {
+    const cubeCoords = useMemo(
+        () => {
+            const cubeCoords = []
 
-    for (let x = 0; x < dimensions[0]; x++) {
-        for (let y = 0; y < dimensions[1]; y++) {
-            for (let z = 0; z < dimensions[2]; z++) {
-                cubeCoords.push([
-                    (x+(1+biggestDim-dimensions[0])*0.5)*cubeSize, 
-                    (y+(1+biggestDim-dimensions[1])*0.5)*cubeSize, 
-                    (z+(1+biggestDim-dimensions[2])*0.5)*cubeSize
-                ])
+            for (let x = 0; x < slicer.x; x++) {
+                for (let y = 0; y < slicer.y; y++) {
+                    for (let z = 0; z < slicer.z; z++) {
+                        cubeCoords.push(
+                            [x, y, z]
+                        )
+                    }
+                }
             }
-        }
-    }
 
-    return {cubeSize, cubeCoords}
-}
-
-function CubeMesh({dimensions=[3, 3, 3]}) {
-    const { cubeSize, cubeCoords } = useMemo(
-        () => calculateCubeCoords(dimensions),
-        [dimensions]
+            return cubeCoords
+        },
+        [slicer]
     )
 
     return (
-        <mesh position={[-0.5, -0.5, -0.5]}>
+        <mesh ref={ref}>
             {
-                cubeCoords.map((coord, index) => (
+                cubeCoords.map((position, index) => (
                 <SingleCube 
                 key={index}
-                position={coord} 
-                size={cubeSize}
-                dimensions={dimensions}
+                position={position}
+                slicer={slicer}
                 />
-            ))}
+                ))
+            }
         </mesh>
     )
-}
+})
 
-function SingleCube({ position=[0.5, 0.5, 0.5], size=1, dimensions=[1, 1, 1]}) {
-    const bounds = useMemo(
-        () => {
-            const maxDim = Math.max(...dimensions)
-            return dimensions.map((dim) => (maxDim-dim+1)*size)
-        }, 
-        [dimensions, size]
-    );
-
+function SingleCube({ position, slicer }) {
     function isEdge(index) {
-        const axis = Math.floor(index / 2) // 0-2
-        const side = index % 2 // 0-1
-
-        return (side ? position[axis] : 1-position[axis]) < bounds[axis]
+        const axis = Math.floor(index/2) // 0-2
+        const side = index%2 // 0-1
+        return position[axis] === (side ? 0 : slicer.dimensions[axis]-1)
     }
 
     return (
-        <mesh position={position}>
-            <boxGeometry args={[size, size, size]} />
+        <mesh position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
+            <boxGeometry args={new Array(3).fill(slicer.sliceSize)} />
             {
                 faceColors.map((color, index) => (
                 <meshStandardMaterial 
@@ -72,9 +59,9 @@ function SingleCube({ position=[0.5, 0.5, 0.5], size=1, dimensions=[1, 1, 1]}) {
                 color={isEdge(index) ? color : 'grey'} 
                 />
             ))}
-            <Edges key={size} lineWidth={5} scale={1.01} color='black' />
+            <Edges key={generateUUID()} lineWidth={5} scale={1.01} color='black' />
         </mesh>
     )
 }
 
-export default CubeMesh;
+export default CubeMesh

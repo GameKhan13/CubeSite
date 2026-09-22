@@ -2,14 +2,12 @@
 import './App.css'
 import CubeRender from './components/CubeRender'
 
-function App() {
+export default function App() {
 
 
   return (
     <>
-      <CubeRender />
+      <CubeRender dimensions={[3, 3, 3]}/>
     </>
   )
 }
-
-export default App
