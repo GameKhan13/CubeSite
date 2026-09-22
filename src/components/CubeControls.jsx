@@ -168,6 +168,51 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         [boundingBox]
     )
 
+    const size = useMemo(
+        () => {
+            const size = new Vector3()
+            boundingBox.getSize(size)
+            return size
+        },
+        [boundingBox]
+    )
+
+    const clickPoints = useMemo(
+        () => {
+            const indent = 0.1
+            switch (axis) {
+                case 0:
+                    return [
+                        new Vector3(center.x, boundingBox.min.y+indent, boundingBox.min.z+indent),
+                        new Vector3(center.x, boundingBox.max.y-indent, boundingBox.min.z+indent),
+                        new Vector3(center.x, boundingBox.max.y-indent, boundingBox.max.z-indent),
+                        new Vector3(center.x, boundingBox.min.y+indent, boundingBox.max.z-indent),
+                        new Vector3(boundingBox.min.x, center.y, center.z),
+                        new Vector3(boundingBox.max.x, center.y, center.z)
+                    ]
+                case 1:
+                    return [
+                        new Vector3(boundingBox.min.x+indent, center.y, boundingBox.min.z+indent),
+                        new Vector3(boundingBox.max.x-indent, center.y, boundingBox.min.z+indent),
+                        new Vector3(boundingBox.max.x-indent, center.y, boundingBox.max.z-indent),
+                        new Vector3(boundingBox.min.x+indent, center.y, boundingBox.max.z-indent),
+                        new Vector3(center.x, boundingBox.min.y, center.z),
+                        new Vector3(center.x, boundingBox.max.y, center.z)
+                    ]
+                case 2:
+                    return [
+                        new Vector3(boundingBox.min.x+indent, boundingBox.min.y+indent, center.z),
+                        new Vector3(boundingBox.max.x-indent, boundingBox.min.y+indent, center.z),
+                        new Vector3(boundingBox.max.x-indent, boundingBox.max.y-indent, center.z),
+                        new Vector3(boundingBox.min.x+indent, boundingBox.max.y-indent, center.z),
+                        new Vector3(center.x, center.y, boundingBox.min.z),
+                        new Vector3(center.x, center.y, boundingBox.max.z)
+                    ]
+            }
+        },
+        [axis, boundingBox, center]
+    )
+
     function rotate() {
         const cubes = meshRef.current.children
         
@@ -189,45 +234,55 @@ function CubeControl({ slicer, axis, position, meshRef }) {
             });
         }
     }
-    
+
+    const [highlighted, setHighlighted] = useState(false)
+
     return (
         <>
-            <Clickable box3={boundingBox} onClick={rotate}/>
+            <mesh position={center}>
+                <boxGeometry args={size.toArray()} />
+                <meshStandardMaterial transparent opacity={(highlighted ? 0.85 : 0)} depthWrite={false} />
+            </mesh>
+            <mesh
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => e.stopPropagation()}
+            onPointerLeave={(e) => e.stopPropagation()}
+            >
+                <boxGeometry args={[2, 2, 2]}/>
+                <meshStandardMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+            {
+                clickPoints.map((position, index) => <Clickable 
+                key={index}
+                position={position}
+                size={slicer.sliceSize/2}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    rotate()
+                }}
+                onPointerEnter={(e) => {
+                    e.stopPropagation()
+                    setHighlighted(true)
+                }}
+                onPointerLeave={(e) => {
+                    e.stopPropagation()
+                    setHighlighted(false)
+                }}
+                />)
+            }
         </>
     )
 }
 
-function Clickable({ box3, onClick }) {
-    const [hovered, setHovered] = useState(false)
-
-    const size = useMemo(() => {
-        const vec = new Vector3();
-        box3.getSize(vec)
-        return [vec.x, vec.y, vec.z];
-    }, [box3]);
-
-    const center = useMemo(() => {
-        const vec = new Vector3();
-        box3.getCenter(vec);
-        return [vec.x, vec.y, vec.z];
-    }, [box3]);
+function Clickable({ position, size, onClick, onPointerEnter, onPointerLeave }) {
 
     return <mesh 
-        position={center} 
-        onClick={(e) => {
-            e.stopPropagation()
-            onClick()
-        }}
-        onPointerEnter={(e) => {
-            e.stopPropagation()
-            setHovered(true)
-        }}
-        onPointerLeave={(e) => {
-            e.stopPropagation()
-            setHovered(false)
-        }}
-        >
-        <boxGeometry args={size} />
-        <meshStandardMaterial transparent opacity={hovered ? 0.85 : 0} depthWrite={false} />
+    position={position}
+    onClick={onClick}
+    onPointerEnter={onPointerEnter}
+    onPointerLeave={onPointerLeave}
+    >
+        <boxGeometry args={[size, size, size]} />
+        <meshStandardMaterial />
     </mesh>
 }
