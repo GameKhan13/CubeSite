@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box3, Quaternion, Sphere, Vector3 } from "three";
 import { PI } from "three/tsl";
 
@@ -44,6 +44,45 @@ export default function CubeControls({ slicer, meshRef }) {
 }
 
 function CubeControl({ slicer, axis, position, meshRef }) {
+
+    const [shiftHeld, setShiftHeld] = useState(false)
+    const [ctrlHeld, setCtrlHeld] = useState(false)
+
+    useEffect(
+        () => {
+            const keyDown = (e) => {
+                switch (e.key) {
+                    case 'Shift':
+                        setShiftHeld(true)
+                        break
+                    case 'Control':
+                        setCtrlHeld(true)
+                        break
+                }
+            }
+
+            const keyUp = (e) => {
+                switch (e.key) {
+                    case 'Shift':
+                        setShiftHeld(false)
+                        break
+                    case 'Control':
+                        setCtrlHeld(false)
+                        break
+                }
+            }
+
+            window.addEventListener('keydown', keyDown)
+            window.addEventListener('keyup', keyUp)
+
+            return () => {
+                window.removeEventListener('keydown', keyDown)
+                window.removeEventListener('keyup', keyUp)
+            }
+        },
+        []
+    )
+
     const rotationQuarternion = useMemo(
         () => {
             const quaternion = new Quaternion()
@@ -62,13 +101,16 @@ function CubeControl({ slicer, axis, position, meshRef }) {
                     axisVector.x = 1
                     break
             }
+
+            const reverse = (-1)**((position>=0)+(shiftHeld))
+            const double = (2)**((ctrlHeld))
             quaternion.setFromAxisAngle(
                 axisVector,
-                PI.value*-0.5
+                PI.value*(0.5)*reverse*double
             )
             return quaternion
         },
-        [axis]
+        [axis, position, ctrlHeld, shiftHeld]
     )
     
     const boundingBox = useMemo(
