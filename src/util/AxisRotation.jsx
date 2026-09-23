@@ -6,34 +6,43 @@ export default class AxisRotation {
         this.axis = axis
         this.position = position
         this.axisDimension = (
-            slicer.x *
-            slicer.y * 
-            slicer.z /
-            slicer.dimensions[axis]
+            slicer.dimensions.x *
+            slicer.dimensions.y * 
+            slicer.dimensions.z /
+            slicer.dimensions.getComponent(axis)
         )
         this.axisNormal = new Vector3(
-            (axis===0), 
-            (axis===1), 
-            (axis===2)
+            +(axis===0), 
+            +(axis===1), 
+            +(axis===2)
         )
+        this.basis1 = new Vector3(
+            +(axis===1), 
+            +(axis===2), 
+            +(axis===0)
+        )
+        this.basis2 = new Vector3(
+            +(axis===2), 
+            +(axis===0), 
+            +(axis===1)
+        )
+        this.axisPlane = new Vector3(1, 1, 1).sub(this.axisNormal)
         this.center = new Vector3().copy(this.axisNormal).multiplyScalar(position)
-        this.minCorner = new Vector3().copy(this.axisNormal).addScalar(-1).add(this.center)
-        this.maxCorner = new Vector3().copy(this.axisNormal).multiplyScalar(-1).addScalar(1).add(this.center)
-        this.collision = new Box3(
-            this.minCorner,
-            this.maxCorner
-        )
         this.rotationQuaternion = new Quaternion().setFromAxisAngle(
             this.axisNormal,
             PI.value/2
         )
-        this._offset = new Vector3()
+        this.collision = new Box3(
+            new Vector3().copy(this.center).sub(this.axisPlane),
+            new Vector3().copy(this.center).add(this.axisPlane)
+        )
+        this.dimensionScale = new Vector3().copy(slicer.dimensions).multiplyScalar(slicer.sliceSize).multiply(this.axisPlane)
     }
     
     /**
      * 
      */
-    rotate(position, quaternion, invert, double) {
+    rotate(rotationData, invert, double) {
         const rquaternion = new Quaternion().copy(this.rotationQuaternion)
         if (invert^this.position>=0) {
             rquaternion.invert()
@@ -42,9 +51,16 @@ export default class AxisRotation {
             rquaternion.premultiply(rquaternion)
         }
 
-        this._offset.copy(position).sub(this.center)
-        this._offset.applyQuaternion(rquaternion)
-        position.copy(this.center).add(this._offset)
-        quaternion.premultiply(rquaternion)
+        rotationData.forEach(({position, quaternion}) => {
+            position.applyQuaternion(rquaternion)
+            quaternion.premultiply(rquaternion)
+        });
+
+        this.dimensionScale.applyQuaternion(rquaternion)
+        return this.dimensionScale.set(
+            Math.abs(this.dimensionScale.x),
+            Math.abs(this.dimensionScale.y),
+            Math.abs(this.dimensionScale.z)
+        )
     }
 }
