@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {Matrix3, Sphere, Vector3 } from "three";
+import { Sphere, Vector3 } from "three";
 import AxisRotation from "../util/AxisRotation";
 
 export default function CubeControls({ slicer, meshRef }) {
