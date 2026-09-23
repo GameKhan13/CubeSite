@@ -1,49 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
-import { Box3, Quaternion, Sphere, Vector3 } from "three";
-import { PI } from "three/tsl";
+import {Sphere, Vector3 } from "three";
+import AxisRotation from "../util/AxisRotation";
 
 export default function CubeControls({ slicer, meshRef }) {
-    function createAxis(axis) {
-        let slices
-        switch (axis) {
-            case 0:
-                slices = slicer.xSlices
-                break
-            case 1:
-                slices = slicer.ySlices
-                break
-            case 2:
-                slices = slicer.zSlices
-                break
-            default:
-                slices = slicer.xSlices
-                break
-        }
-        return <group>
-            {
-                slices.map((slice, index) => 
-                <CubeControl 
-                key={index}
-                slicer={slicer}
-                position={slice}
-                meshRef={meshRef}
-                axis={axis}
-                />
-                )
-            }
-        </group>
-    }
+    const slices = [slicer.xSlices, slicer.ySlices, slicer.zSlices]
 
     return (
         <group>
-            {createAxis(0)}
-            {createAxis(1)}
-            {createAxis(2)}
+            {
+                slices.map((slice, axis) => 
+                    slice.map((position, index) => 
+                        <CubeControl 
+                        key={slicer.maxDimension*axis+index}
+                        slicer={slicer}
+                        position={position}
+                        meshRef={meshRef}
+                        axis={axis}
+                        />
+                    )
+                )
+                
+            }
         </group>
     );
 }
 
 function CubeControl({ slicer, axis, position, meshRef }) {
+    const axisRotation = useMemo(
+        () => new AxisRotation(slicer, axis, position),
+        [slicer, axis, position]
+    )
+    console.log(axisRotation)
 
     const [shiftHeld, setShiftHeld] = useState(false)
     const [ctrlHeld, setCtrlHeld] = useState(false)
@@ -83,89 +70,18 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         []
     )
 
-    const rotationQuarternion = useMemo(
+    const clickPoints = useMemo(
         () => {
-            const quaternion = new Quaternion()
-            const axisVector = new Vector3(0, 0, 0)
-            switch (axis) {
-                case 0:
-                    axisVector.x = 1
-                    break
-                case 1:
-                    axisVector.y = 1
-                    break
-                case 2:
-                    axisVector.z = 1
-                    break
-                default:
-                    axisVector.x = 1
-                    break
-            }
-
-            const reverse = (-1)**((position>=0)+(shiftHeld))
-            const double = (2)**((ctrlHeld))
-            quaternion.setFromAxisAngle(
-                axisVector,
-                PI.value*(0.5)*reverse*double
-            )
-            return quaternion
+            return [
+                new Vector3().copy(axisRotation.minCorner),
+                new Vector3().copy(axisRotation.minCorner).sub(axisRotation.center).cross(axisRotation.axisNormal).add(axisRotation.center),
+                new Vector3().copy(axisRotation.maxCorner),
+                new Vector3().copy(axisRotation.maxCorner).sub(axisRotation.center).cross(axisRotation.axisNormal).add(axisRotation.center),
+                new Vector3().copy(axisRotation.center).add(new Vector3().copy(axisRotation.axisNormal).multiplyScalar(slicer.sliceSize/2)),
+                new Vector3().copy(axisRotation.center).sub(new Vector3().copy(axisRotation.axisNormal).multiplyScalar(slicer.sliceSize/2))
+            ]
         },
-        [axis, position, ctrlHeld, shiftHeld]
-    )
-    
-    const boundingBox = useMemo(
-        () => {
-            const rotund = 1.1
-            const halfWidth = slicer.sliceSize*0.49
-
-            switch (axis) {
-                case 0:
-                    return new Box3(
-                        new Vector3(position-halfWidth, -rotund, -rotund),
-                        new Vector3(position+halfWidth, rotund, rotund)
-                    )
-                case 1:
-                    return new Box3(
-                        new Vector3(-rotund, position-halfWidth, -rotund),
-                        new Vector3(rotund, position+halfWidth, rotund)
-                    )
-                case 2:
-                    return new Box3(
-                        new Vector3(-rotund, -rotund, position-halfWidth),
-                        new Vector3(rotund, rotund, position+halfWidth)
-                    )
-                default:
-                    return new Box3(
-                        new Vector3(0, 0, 0),
-                        new Vector3(0, 0, 0)
-                    )
-            }
-        },
-        [slicer, axis, position]
-    )
-
-    const properHits = useMemo(
-        () => {
-            switch (axis) {
-                case 0:
-                    return slicer.y * slicer.z
-                case 1:
-                    return slicer.x * slicer.z
-                case 2:
-                    return slicer.x * slicer.y
-                default:
-                    return 0
-            }
-        },
-        [axis, slicer]
-    )
-
-    const center = useMemo(
-        () => {
-            const center = new Vector3()
-            return boundingBox.getCenter(center)
-        },
-        [boundingBox]
+        [axisRotation, slicer]
     )
 
     function rotate() {
@@ -174,60 +90,78 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         const intersecting = []
         cubes.forEach((cube) => {
             const boundingSphere = new Sphere(cube.position, slicer.sliceSize*0.1)
-            if (boundingBox.intersectsSphere(boundingSphere)) {
+            if (axisRotation.collision.intersectsSphere(boundingSphere)) {
                 intersecting.push(cube)
             }
         });
 
-        if (intersecting.length === properHits) {
-            const offSet = new Vector3()
+        if (intersecting.length === axisRotation.axisDimension) {
             intersecting.forEach((cube) => {
-                offSet.copy(cube.position).sub(center)
-                offSet.applyQuaternion(rotationQuarternion)
-                cube.position.copy(center).add(offSet)
-                cube.quaternion.premultiply(rotationQuarternion)
+                axisRotation.rotate(
+                    cube.position, 
+                    cube.quaternion,
+                    shiftHeld,
+                    ctrlHeld
+                )
             });
         }
     }
-    
+
+    const [highlighted, setHighlighted] = useState(false)
+
     return (
         <>
-            <Clickable box3={boundingBox} onClick={rotate}/>
+            <mesh position={axisRotation.center}>
+                <boxGeometry 
+                args={
+                    new Vector3()
+                    .copy(axisRotation.axisNormal)
+                    .multiplyScalar(slicer.sliceSize-2)
+                    .addScalar(2.1).toArray()
+                    } 
+                />
+                <meshStandardMaterial transparent opacity={(highlighted ? 0.85 : 0)} depthWrite={false} />
+            </mesh>
+            <mesh
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => e.stopPropagation()}
+            onPointerLeave={(e) => e.stopPropagation()}
+            >
+                <boxGeometry args={[2, 2, 2]}/>
+                <meshStandardMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+            {
+                clickPoints.map((position, index) => <Clickable 
+                key={index}
+                position={position}
+                size={slicer.sliceSize/2}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    rotate()
+                }}
+                onPointerEnter={(e) => {
+                    e.stopPropagation()
+                    setHighlighted(true)
+                }}
+                onPointerLeave={(e) => {
+                    e.stopPropagation()
+                    setHighlighted(false)
+                }}
+                />)
+            }
         </>
     )
 }
 
-function Clickable({ box3, onClick }) {
-    const [hovered, setHovered] = useState(false)
-
-    const size = useMemo(() => {
-        const vec = new Vector3();
-        box3.getSize(vec)
-        return [vec.x, vec.y, vec.z];
-    }, [box3]);
-
-    const center = useMemo(() => {
-        const vec = new Vector3();
-        box3.getCenter(vec);
-        return [vec.x, vec.y, vec.z];
-    }, [box3]);
+function Clickable({ position, size, onClick, onPointerEnter, onPointerLeave }) {
 
     return <mesh 
-        position={center} 
-        onClick={(e) => {
-            e.stopPropagation()
-            onClick()
-        }}
-        onPointerEnter={(e) => {
-            e.stopPropagation()
-            setHovered(true)
-        }}
-        onPointerLeave={(e) => {
-            e.stopPropagation()
-            setHovered(false)
-        }}
-        >
-        <boxGeometry args={size} />
-        <meshStandardMaterial transparent opacity={hovered ? 0.85 : 0} depthWrite={false} />
+    position={position}
+    onClick={onClick}
+    onPointerEnter={onPointerEnter}
+    onPointerLeave={onPointerLeave}
+    >
+        <boxGeometry args={[size, size, size]} />
+        <meshStandardMaterial />
     </mesh>
 }
