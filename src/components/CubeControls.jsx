@@ -13,7 +13,7 @@ export default function CubeControls({ slicer, meshRef }) {
             onPointerLeave={(e) => e.stopPropagation()}
             >
                 <boxGeometry args={
-                    slicer.dimensions
+                    new Vector3().copy(slicer.dimensions)
                     .multiplyScalar(slicer.sliceSize)
                     .toArray()
                 }
