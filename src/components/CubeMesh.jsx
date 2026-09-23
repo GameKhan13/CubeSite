@@ -1,10 +1,8 @@
 import { Edges } from '@react-three/drei'
 import { forwardRef, useMemo } from 'react';
-import { Sphere } from 'three';
-import { generateUUID } from 'three/src/math/MathUtils.js';
 
 // right, left, top, bottom, front, back
-const faceColors = ['orange', 'red', 'white', 'yellow', 'blue', 'green']
+const faceColors = ['blue', 'green', 'white', 'yellow', 'red', 'orange']
 
 const CubeMesh = forwardRef(({ slicer }, ref) => {
     const cubeCoords = useMemo(
@@ -49,7 +47,7 @@ function SingleCube({ position, slicer }) {
     }
 
     return (
-        <mesh key={slicer.dimensions.join('')} position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
+        <mesh position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
             <boxGeometry args={new Array(3).fill(slicer.sliceSize)} />
             {
                 faceColors.map((color, index) => (
