@@ -7,6 +7,19 @@ export default function CubeControls({ slicer, meshRef }) {
 
     return (
         <group>
+            <mesh
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => e.stopPropagation()}
+            onPointerLeave={(e) => e.stopPropagation()}
+            >
+                <boxGeometry args={
+                    slicer.dimensions
+                    .multiplyScalar(slicer.sliceSize)
+                    .toArray()
+                }
+                />
+                <meshStandardMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
             {
                 slices.map((slice, axis) => 
                     slice.map((position, index) => 
@@ -121,16 +134,6 @@ function CubeControl({ slicer, axis, position, meshRef }) {
                     } 
                 />
                 <meshStandardMaterial transparent opacity={(highlighted ? 0.85 : 0)} depthWrite={false} />
-            </mesh>
-            <mesh
-            onClick={(e) => e.stopPropagation()}
-            onPointerEnter={(e) => e.stopPropagation()}
-            onPointerLeave={(e) => e.stopPropagation()}
-            >
-                <boxGeometry args={
-                    new Vector3().copy(axisRotation.dimensionScale).toArray()
-                }/>
-                <meshStandardMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
             {
                 clickPoints.map((position, index) => <Clickable 
