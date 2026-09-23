@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {Sphere, Vector3 } from "three";
+import { Sphere, Vector3 } from "three";
 import AxisRotation from "../util/AxisRotation";
 
 export default function CubeControls({ slicer, meshRef }) {
@@ -26,12 +26,7 @@ export default function CubeControls({ slicer, meshRef }) {
 }
 
 function CubeControl({ slicer, axis, position, meshRef }) {
-    const axisRotation = useMemo(
-        () => new AxisRotation(slicer, axis, position),
-        [slicer, axis, position]
-    )
-    console.log(axisRotation)
-
+    const [axisRotation, setAxisRotation] = useState(new AxisRotation(slicer, axis, position))
     const [shiftHeld, setShiftHeld] = useState(false)
     const [ctrlHeld, setCtrlHeld] = useState(false)
 
@@ -73,10 +68,10 @@ function CubeControl({ slicer, axis, position, meshRef }) {
     const clickPoints = useMemo(
         () => {
             return [
-                new Vector3().copy(axisRotation.minCorner),
-                new Vector3().copy(axisRotation.minCorner).sub(axisRotation.center).cross(axisRotation.axisNormal).add(axisRotation.center),
-                new Vector3().copy(axisRotation.maxCorner),
-                new Vector3().copy(axisRotation.maxCorner).sub(axisRotation.center).cross(axisRotation.axisNormal).add(axisRotation.center),
+                new Vector3().copy(axisRotation.basis1).add(axisRotation.basis2).multiply(axisRotation.dimensionScale).multiplyScalar(1/2).add(axisRotation.center),
+                new Vector3().copy(axisRotation.basis1).sub(axisRotation.basis2).multiply(axisRotation.dimensionScale).multiplyScalar(1/2).add(axisRotation.center),
+                new Vector3().copy(axisRotation.basis1).multiplyScalar(-1).add(axisRotation.basis2).multiply(axisRotation.dimensionScale).multiplyScalar(1/2).add(axisRotation.center),
+                new Vector3().copy(axisRotation.basis1).multiplyScalar(-1).sub(axisRotation.basis2).multiply(axisRotation.dimensionScale).multiplyScalar(1/2).add(axisRotation.center),
                 new Vector3().copy(axisRotation.center).add(new Vector3().copy(axisRotation.axisNormal).multiplyScalar(slicer.sliceSize/2)),
                 new Vector3().copy(axisRotation.center).sub(new Vector3().copy(axisRotation.axisNormal).multiplyScalar(slicer.sliceSize/2))
             ]
@@ -91,19 +86,21 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         cubes.forEach((cube) => {
             const boundingSphere = new Sphere(cube.position, slicer.sliceSize*0.1)
             if (axisRotation.collision.intersectsSphere(boundingSphere)) {
-                intersecting.push(cube)
+                intersecting.push({position: cube.position, quaternion: cube.quaternion})
             }
         });
 
         if (intersecting.length === axisRotation.axisDimension) {
-            intersecting.forEach((cube) => {
-                axisRotation.rotate(
-                    cube.position, 
-                    cube.quaternion,
-                    shiftHeld,
-                    ctrlHeld
-                )
-            });
+            const newAxisRotation = Object.assign(
+                Object.create(Object.getPrototypeOf(axisRotation)), 
+                axisRotation
+            )
+            newAxisRotation.dimensionScale = axisRotation.rotate(
+                intersecting,
+                shiftHeld,
+                ctrlHeld
+            )
+            setAxisRotation(newAxisRotation)
         }
     }
 
@@ -114,10 +111,13 @@ function CubeControl({ slicer, axis, position, meshRef }) {
             <mesh position={axisRotation.center}>
                 <boxGeometry 
                 args={
-                    new Vector3()
-                    .copy(axisRotation.axisNormal)
-                    .multiplyScalar(slicer.sliceSize-2)
-                    .addScalar(2.1).toArray()
+                    new Vector3().copy(axisRotation.dimensionScale)
+                    .add(
+                        new Vector3().copy(axisRotation.axisNormal)
+                        .multiplyScalar(slicer.sliceSize)
+                    )
+                    .addScalar(0.1)
+                    .toArray()
                     } 
                 />
                 <meshStandardMaterial transparent opacity={(highlighted ? 0.85 : 0)} depthWrite={false} />
@@ -127,7 +127,9 @@ function CubeControl({ slicer, axis, position, meshRef }) {
             onPointerEnter={(e) => e.stopPropagation()}
             onPointerLeave={(e) => e.stopPropagation()}
             >
-                <boxGeometry args={[2, 2, 2]}/>
+                <boxGeometry args={
+                    new Vector3().copy(axisRotation.dimensionScale).toArray()
+                }/>
                 <meshStandardMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
             {
