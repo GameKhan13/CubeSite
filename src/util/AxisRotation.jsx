@@ -56,11 +56,13 @@ export default class AxisRotation {
             quaternion.premultiply(rquaternion)
         });
 
-        this.dimensionScale.applyQuaternion(rquaternion)
-        return this.dimensionScale.set(
-            Math.abs(this.dimensionScale.x),
-            Math.abs(this.dimensionScale.y),
-            Math.abs(this.dimensionScale.z)
+        const newDimensions = new Vector3()
+        .copy(this.dimensionScale)
+        .applyQuaternion(rquaternion)
+        return newDimensions.set(
+            Math.abs(newDimensions.x),
+            Math.abs(newDimensions.y),
+            Math.abs(newDimensions.z)
         )
     }
 }
