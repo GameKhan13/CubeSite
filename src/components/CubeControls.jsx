@@ -39,7 +39,10 @@ export default function CubeControls({ slicer, meshRef }) {
 }
 
 function CubeControl({ slicer, axis, position, meshRef }) {
-    const [axisRotation, setAxisRotation] = useState(new AxisRotation(slicer, axis, position))
+    const axisRotation = useMemo(
+        () => new AxisRotation(slicer, axis, position),
+        [slicer, axis, position]
+    )
     const [shiftHeld, setShiftHeld] = useState(false)
     const [ctrlHeld, setCtrlHeld] = useState(false)
 
@@ -104,16 +107,12 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         });
 
         if (intersecting.length === axisRotation.axisDimension) {
-            const newAxisRotation = Object.assign(
-                Object.create(Object.getPrototypeOf(axisRotation)), 
-                axisRotation
-            )
-            newAxisRotation.dimensionScale = axisRotation.rotate(
+            axisRotation.rotate(
                 intersecting,
                 shiftHeld,
                 ctrlHeld
             )
-            setAxisRotation(newAxisRotation)
+            console.log(axisRotation)
         }
     }
 
