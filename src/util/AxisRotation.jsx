@@ -37,6 +37,7 @@ export default class AxisRotation {
             new Vector3().copy(this.center).add(this.axisPlane)
         )
         this.dimensionScale = new Vector3().copy(slicer.dimensions).multiplyScalar(slicer.sliceSize).multiply(this.axisPlane)
+        this.square = this.axisDimension === (new Vector3().copy(this.axisPlane).multiply(slicer.dimensions).lengthSq()/2)
     }
     
     /**
@@ -47,7 +48,7 @@ export default class AxisRotation {
         if (invert^this.position>=0) {
             rquaternion.invert()
         }
-        if (double) {
+        if (double || !this.square) {
             rquaternion.premultiply(rquaternion)
         }
 
@@ -55,14 +56,5 @@ export default class AxisRotation {
             position.applyQuaternion(rquaternion)
             quaternion.premultiply(rquaternion)
         });
-
-        const newDimensions = new Vector3()
-        .copy(this.dimensionScale)
-        .applyQuaternion(rquaternion)
-        return newDimensions.set(
-            Math.abs(newDimensions.x),
-            Math.abs(newDimensions.y),
-            Math.abs(newDimensions.z)
-        )
     }
 }
