@@ -1,4 +1,6 @@
 #canvas-container {
-    background-color: blue;
+    background-color: rgb(55, 55, 55);
     height: 100dvh;
+    min-width: 100dvh;
+    width: 60vw;
 }

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sphere, Vector3 } from "three";
 import AxisRotation from "../util/AxisRotation";
+import RotationNotation from "../util/RotationNotation";
 
-export default function CubeControls({ slicer, meshRef }) {
+export default function CubeControls({ slicer, meshRef, rotationData, setRotationData }) {
     const slices = [slicer.xSlices, slicer.ySlices, slicer.zSlices]
 
     return (
@@ -26,9 +27,11 @@ export default function CubeControls({ slicer, meshRef }) {
                         <CubeControl 
                         key={slicer.maxDimension*axis+index}
                         slicer={slicer}
+                        axis={axis}
                         position={position}
                         meshRef={meshRef}
-                        axis={axis}
+                        rotationData={rotationData}
+                        setRotationData={setRotationData}
                         />
                     )
                 )
@@ -38,7 +41,7 @@ export default function CubeControls({ slicer, meshRef }) {
     );
 }
 
-function CubeControl({ slicer, axis, position, meshRef }) {
+function CubeControl({ slicer, axis, position, meshRef, rotationData, setRotationData }) {
     const axisRotation = useMemo(
         () => new AxisRotation(slicer, axis, position),
         [slicer, axis, position]
@@ -107,12 +110,14 @@ function CubeControl({ slicer, axis, position, meshRef }) {
         });
 
         if (intersecting.length === axisRotation.axisDimension) {
-            axisRotation.rotate(
-                intersecting,
-                shiftHeld,
-                ctrlHeld
-            )
-            console.log(axisRotation)
+            setRotationData([
+                ...rotationData,
+                new RotationNotation(axisRotation.rotate(
+                    intersecting,
+                    shiftHeld,
+                    ctrlHeld
+                ))
+            ])
         }
     }
 
@@ -166,6 +171,6 @@ function Clickable({ position, size, onClick, onPointerEnter, onPointerLeave }) 
     onPointerLeave={onPointerLeave}
     >
         <boxGeometry args={[size, size, size]} />
-        <meshStandardMaterial />
+        <meshStandardMaterial transparent opacity={0.5} color={'grey'} depthWrite={false} />
     </mesh>
 }
