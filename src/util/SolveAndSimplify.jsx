@@ -1,43 +1,11 @@
 export default function solveAndSimplify(scramble) {
-    const newScramble = []
-    let changed = false
-    let failed = []
+    let newScramble = [...scramble]
+    let repass = true
+    let passCounter = 0
 
-    let comp = 0
-    let current = 1
-    // pass over each current value
-    while (comp < scramble.length-1) {
-        // check if the next one follows a simplification rule        
-        const {hit, replace} = simplify(scramble[comp], scramble[current])
-        
-        if (hit) {                
-            // if a rule hits follow the replacement rules it has and run again 
-            if (replace) {                
-                newScramble.push(replace)
-            }
-            newScramble.push(...failed)
-            failed = []
-            changed = true
-            comp = current+1
-            current = comp+1
-        } else if (
-            current < scramble.length-1 &&
-            scramble[current].axis === scramble[current+1].axis
-        ) { 
-            // if no rules pass check if the one after is order independent
-            failed.push(scramble[current])
-            current += 1
-        } else {
-            // repeat until no rotation independent values are left
-            newScramble.push(scramble[comp], ...failed)
-            failed = []
-            comp += 1
-            current = comp+1
-        }
-    }
-
-    if (comp === scramble.length-1) {
-        newScramble.push(scramble[comp])
+    while (repass) {
+        passCounter += 1;
+        ({newScramble, repass} = singlePass(newScramble))
     }
 
     const solution = invert(newScramble)
@@ -45,6 +13,57 @@ export default function solveAndSimplify(scramble) {
     return {
         scramble: newScramble,
         solution: solution,
+        changed: passCounter > 1
+    }
+}
+
+function singlePass(scramble) {
+    const newScramble = []
+    let changed = false
+    let failed = []
+
+    let comp = 0
+    let current = 1
+
+    // iterate through all valid pairs (-1 for the pair (end-1, end))
+    while (comp < scramble.length-1) {
+        // check for a simplification on the pair
+        const {hit, replace} = simplify(scramble[comp], scramble[current])
+        
+        // if a rule is identified for the pair
+        if (hit) {
+            // if it has a replacement move push that to the new scramble
+            if (replace) {                
+                newScramble.push(replace)
+            }
+            newScramble.push(...failed) // push all the skipped currents after as well
+            failed = []                 // reset the failed array
+            changed = true              // set the changed flag
+            comp = current+1            // set comp to pass over all values that have been compared
+            current = comp+1            // set current to be the one after comp
+        } else if ( // if current is not at the end of the list and current and the next in line are on the same axis
+            current < scramble.length-1 &&
+            scramble[current].axis === scramble[current+1].axis
+        ) { 
+            // a check for the one after is allowed since they are independent
+            failed.push(scramble[current])  // push the current to the failed list
+            current += 1                    // increment current
+        } else {
+            // if there are no more possible comparisons left for comp
+            newScramble.push(scramble[comp])    // push comp
+            failed = []                         // reset failed array
+            comp += 1                           // increment comp
+            current = comp+1                    // set current to the one after comp
+        }
+    }
+
+    // if no rule was found for the last value
+    if (comp === scramble.length-1) {
+        newScramble.push(scramble[comp]) // push the last value
+    }
+
+    return {
+        newScramble: newScramble,
         changed: changed
     }
 }

@@ -56,14 +56,14 @@ export default class AxisRotation {
                 )
                 break
             case 1:
-                this.moveName += (
+                this.moveName = (
                     position===0?"E"
                     :position<0?this.moveName+"D"
                     :this.moveName+"U"
                 )
                 break
             case 2:
-                this.moveName += (
+                this.moveName = (
                     position===0?"S"
                     :position<0?this.moveName+"B"
                     :this.moveName+"F"
