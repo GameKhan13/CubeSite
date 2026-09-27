@@ -7,7 +7,7 @@ import solveAndSimplify from './util/SolveAndSimplify'
 
 export default function App() {
   const [rotationData, setRotationData] = useState([])
-  const dimension = [3, 3, 3]
+  const [dimensions, setDimensions] = useState([3, 3, 3])
 
   const {scramble, solution, changed} = solveAndSimplify(rotationData)
   if (changed) {
@@ -15,11 +15,13 @@ export default function App() {
   }
 
   return (
-    <>
-      <div id='cube-container'>
-        <CubeRender dimensions={dimension} rotationData={scramble} setRotationData={setRotationData} />
-        <DataBar dimension={dimension} scramble={scramble} solution={solution} />
+    <div id='app-container'>
+      <div id='cube-container' key={dimensions.join('')}>
+        <CubeRender dimensions={dimensions} rotationData={scramble} setRotationData={setRotationData} />
       </div>
-    </>
+      <aside id='data-container' >
+        <DataBar dimensions={dimensions} setDimensions={setDimensions} scramble={scramble} solution={solution} />
+      </aside>
+    </div>
   )
 }

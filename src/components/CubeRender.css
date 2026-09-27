@@ -1,6 +1,7 @@
+#cube-renderer {
+    height: 100%;
+}
+
 #canvas-container {
     background-color: rgb(55, 55, 55);
-    height: 100dvh;
-    min-width: 100dvh;
-    width: 60vw;
 }

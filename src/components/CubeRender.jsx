@@ -15,13 +15,13 @@ export default function CubeRender({dimensions=[3, 3, 3], rotationData, setRotat
     const mesh = useRef(null)
 
     return (
-        <section id='canvas-container' key={dimensions.join('')}>
+        <div id='cube-renderer'>
             <Canvas camera={{position: [2, 2, 2]}}>
                 <OrbitControls enablePan={false} enableZoom={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
                 <ambientLight intensity={2}/>
                 <CubeMesh slicer={slicer} ref={mesh}/>
                 <CubeControls slicer={slicer} meshRef={mesh} rotationData={rotationData} setRotationData={setRotationData} />
             </Canvas>
-        </section>
+        </div>
     )
 }

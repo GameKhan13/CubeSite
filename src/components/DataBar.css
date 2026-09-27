@@ -1,17 +1,43 @@
-section {
-    width: 40vw;
+#data-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.container {
-    height: 100dvh;
-}
-
-.dimension-text {
+.dimension-section {
+    height: 25dvh;
     padding: 2.5dvh 0;
-    height: 15dvh;
 }
 
-.rotation-text {
+.rotation-section {
+    flex: 1;
     padding: 2.5dvh 0;
-    height: 35dvh;
+    border-top: 5px solid #333;
+}
+
+#dimension-fields {
+    display: flex;
+    height: 14dvh;
+    width: min(80%, 30vw);
+    margin: auto;
+
+    & .dimension-column {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    & button {
+        height: 100%;
+        cursor: pointer;
+        font-size: 0.5rem;
+        padding: 0;
+        border: none;
+
+        &:hover {
+            filter: brightness(1.2);
+        }
+    }
 }
