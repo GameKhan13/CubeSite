@@ -89,11 +89,11 @@ function DimensionIncrimenter ({dimensions, setDimensions, index}) {
 }
 
 function DimensionDecrimenter ({dimensions, setDimensions, index}) {
-    const max = 5
+    const min = 1
     const incriment = () => {
         const newDimension = dimensions[index] - 1
 
-        if (newDimension <= max) {
+        if (newDimension >= min) {
             const newDimensions = [...dimensions]
             newDimensions[index] = newDimension
             setDimensions(newDimensions)

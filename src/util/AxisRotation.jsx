@@ -91,6 +91,6 @@ export default class AxisRotation {
             quaternion.premultiply(rquaternion)
         });
         
-        return this.moveName + (double?"2":invert?"'":"")
+        return this.moveName + (double||!this.square?"2":invert?"'":"")
     }
 }
