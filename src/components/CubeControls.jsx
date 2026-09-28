@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Sphere, Vector3 } from "three";
+import { Box3, Euler, Quaternion, Vector3 } from "three";
 import AxisRotation from "../util/AxisRotation";
 import RotationNotation from "../util/RotationNotation";
+import { useFrame } from "@react-three/fiber";
 
 export default function CubeControls({ active, slicer, meshRef, rotationData, setRotationData }) {
     const slices = [slicer.xSlices, slicer.ySlices, slicer.zSlices]
@@ -9,7 +10,39 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
     const [shiftHeld, setShiftHeld] = useState(false)
     const [ctrlHeld, setCtrlHeld] = useState(false)
 
-    const [rotating, setRotating] = useState(false)
+    const [quaternion, setQuaternion] = useState(new Quaternion())
+    const steps = 20
+    const [rotationStep, setRotationStep] = useState(0)
+    const [rotationTargets, setRotationTargets] = useState([])
+
+    useFrame(() => {
+        if (rotationStep > 0) {
+            rotationTargets.forEach(({cubePosition, cubeQuaternion}) => {
+                cubePosition.applyQuaternion(quaternion)
+                cubeQuaternion.premultiply(quaternion)
+            });
+            if (rotationStep === steps) {
+                // snap
+                rotationTargets.forEach(({cubePosition, cubeQuaternion}) => {
+                    cubePosition.x = Math.round(cubePosition.x / slicer.sliceSize) * slicer.sliceSize
+                    cubePosition.y = Math.round(cubePosition.y / slicer.sliceSize) * slicer.sliceSize
+                    cubePosition.z = Math.round(cubePosition.z / slicer.sliceSize) * slicer.sliceSize
+
+                    const euler = new Euler().setFromQuaternion(cubeQuaternion, 'XYZ')
+                    const halfPi = Math.PI / 2
+                    
+                    euler.x = Math.round(euler.x / halfPi) * halfPi
+                    euler.y = Math.round(euler.y / halfPi) * halfPi
+                    euler.z = Math.round(euler.z / halfPi) * halfPi
+                    
+                    cubeQuaternion.setFromEuler(euler)
+                });
+                setRotationStep(0)
+            } else {
+                setRotationStep(rotationStep+1)
+            }
+        }
+    })
 
     useEffect(
         () => {
@@ -48,7 +81,7 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
 
     const rotate = useCallback(
         (axisRotation) => {
-            if (!active || rotating) {
+            if (rotationStep > 0) {
                 return
             }
 
@@ -56,24 +89,28 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
             
             const intersecting = []
             cubes.forEach((cube) => {
-                const boundingSphere = new Sphere(cube.position, slicer.sliceSize*0.1)
-                if (axisRotation.collision.intersectsSphere(boundingSphere)) {
-                    intersecting.push({position: cube.position, quaternion: cube.quaternion})
+                const boundingBox = new Box3().setFromObject(cube)
+                if (axisRotation.collision.intersectsBox(boundingBox)) {
+                    intersecting.push({cubePosition: cube.position, cubeQuaternion: cube.quaternion})
                 }
-            });
+            });            
 
             if (intersecting.length === axisRotation.axisDimension) {
+                const {quaternion, moveName} = axisRotation.getQuaternion(
+                    shiftHeld,
+                    ctrlHeld
+                )
+
+                setRotationTargets(intersecting)
+                setQuaternion(new Quaternion().identity().slerp(quaternion, 1/steps))
+                setRotationStep(1)
                 setRotationData([
                     ...rotationData,
-                    new RotationNotation(axisRotation.rotate(
-                        intersecting,
-                        shiftHeld,
-                        ctrlHeld
-                    ))
+                    new RotationNotation(moveName)
                 ])
             }
         },
-        [active, rotating, setRotating, rotationData, slicer, setRotationData, meshRef, ctrlHeld, shiftHeld]
+        [ctrlHeld, meshRef, rotationData, rotationStep, setRotationData, shiftHeld]
     )
 
     return (
@@ -96,7 +133,7 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
                     slice.map((position, index) => 
                         <CubeControl 
                         key={slicer.maxDimension*axis+index}
-                        active={active && !rotating}
+                        active={active && rotationStep === 0}
                         slicer={slicer}
                         axis={axis}
                         position={position}
@@ -156,7 +193,9 @@ function CubeControl({ active, slicer, axis, position, rotateFunc }) {
                 size={slicer.sliceSize/2}
                 onClick={(e) => {
                     e.stopPropagation()
-                    rotateFunc(axisRotation)
+                    if(active) {
+                        rotateFunc(axisRotation)
+                    }
                 }}
                 onPointerEnter={(e) => {
                     e.stopPropagation()
