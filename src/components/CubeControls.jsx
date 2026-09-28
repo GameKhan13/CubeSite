@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box3, Euler, Quaternion, Vector3 } from "three";
+import { Box3, Quaternion, Vector3 } from "three";
 import AxisRotation from "../util/AxisRotation";
 import RotationNotation from "../util/RotationNotation";
 import { useFrame } from "@react-three/fiber";
@@ -27,18 +27,6 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
                 rotationTargets.forEach(({cubePosition, cubeQuaternion}, index) => {
                     cubePosition.copy(snaps[index].cubePosition)
                     cubeQuaternion.copy(snaps[index].cubeQuaternion)
-                    // cubePosition.x = Math.round(cubePosition.x / slicer.sliceSize) * slicer.sliceSize
-                    // cubePosition.y = Math.round(cubePosition.y / slicer.sliceSize) * slicer.sliceSize
-                    // cubePosition.z = Math.round(cubePosition.z / slicer.sliceSize) * slicer.sliceSize
-
-                    // const euler = new Euler().setFromQuaternion(cubeQuaternion, 'XYZ')
-                    // const halfPi = Math.PI / 2
-                    
-                    // euler.x = Math.round(euler.x / halfPi) * halfPi
-                    // euler.y = Math.round(euler.y / halfPi) * halfPi
-                    // euler.z = Math.round(euler.z / halfPi) * halfPi
-                    
-                    // cubeQuaternion.setFromEuler(euler)
                 });
                 setRotationStep(0)
             } else {
