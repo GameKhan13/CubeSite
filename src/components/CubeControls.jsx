@@ -10,10 +10,11 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
     const [shiftHeld, setShiftHeld] = useState(false)
     const [ctrlHeld, setCtrlHeld] = useState(false)
 
-    const [quaternion, setQuaternion] = useState(new Quaternion())
+    const [quaternion, setQuaternion] = useState()
     const steps = 20
     const [rotationStep, setRotationStep] = useState(0)
-    const [rotationTargets, setRotationTargets] = useState([])
+    const [rotationTargets, setRotationTargets] = useState()
+    const [snaps, setSnaps] = useState()
 
     useFrame(() => {
         if (rotationStep > 0) {
@@ -23,19 +24,21 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
             });
             if (rotationStep === steps) {
                 // snap
-                rotationTargets.forEach(({cubePosition, cubeQuaternion}) => {
-                    cubePosition.x = Math.round(cubePosition.x / slicer.sliceSize) * slicer.sliceSize
-                    cubePosition.y = Math.round(cubePosition.y / slicer.sliceSize) * slicer.sliceSize
-                    cubePosition.z = Math.round(cubePosition.z / slicer.sliceSize) * slicer.sliceSize
+                rotationTargets.forEach(({cubePosition, cubeQuaternion}, index) => {
+                    cubePosition.copy(snaps[index].cubePosition)
+                    cubeQuaternion.copy(snaps[index].cubeQuaternion)
+                    // cubePosition.x = Math.round(cubePosition.x / slicer.sliceSize) * slicer.sliceSize
+                    // cubePosition.y = Math.round(cubePosition.y / slicer.sliceSize) * slicer.sliceSize
+                    // cubePosition.z = Math.round(cubePosition.z / slicer.sliceSize) * slicer.sliceSize
 
-                    const euler = new Euler().setFromQuaternion(cubeQuaternion, 'XYZ')
-                    const halfPi = Math.PI / 2
+                    // const euler = new Euler().setFromQuaternion(cubeQuaternion, 'XYZ')
+                    // const halfPi = Math.PI / 2
                     
-                    euler.x = Math.round(euler.x / halfPi) * halfPi
-                    euler.y = Math.round(euler.y / halfPi) * halfPi
-                    euler.z = Math.round(euler.z / halfPi) * halfPi
+                    // euler.x = Math.round(euler.x / halfPi) * halfPi
+                    // euler.y = Math.round(euler.y / halfPi) * halfPi
+                    // euler.z = Math.round(euler.z / halfPi) * halfPi
                     
-                    cubeQuaternion.setFromEuler(euler)
+                    // cubeQuaternion.setFromEuler(euler)
                 });
                 setRotationStep(0)
             } else {
@@ -101,7 +104,17 @@ export default function CubeControls({ active, slicer, meshRef, rotationData, se
                     ctrlHeld
                 )
 
+                const finals = []
+
+                intersecting.forEach(({cubePosition, cubeQuaternion}) => {
+                    finals.push({
+                        cubePosition: new Vector3().copy(cubePosition).applyQuaternion(quaternion),
+                        cubeQuaternion: new Quaternion().copy(cubeQuaternion).premultiply(quaternion)
+                    })
+                });
+
                 setRotationTargets(intersecting)
+                setSnaps(finals)
                 setQuaternion(new Quaternion().identity().slerp(quaternion, 1/steps))
                 setRotationStep(1)
                 setRotationData([
