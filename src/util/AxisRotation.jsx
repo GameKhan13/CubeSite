@@ -1,5 +1,4 @@
 import { Box3, Quaternion, Vector3 } from "three"
-import { PI } from "three/tsl"
 
 export default class AxisRotation {
     constructor(slicer, axis, position) {
@@ -30,7 +29,7 @@ export default class AxisRotation {
         this.center = new Vector3().copy(this.axisNormal).multiplyScalar(position)
         this.rotationQuaternion = new Quaternion().setFromAxisAngle(
             this.axisNormal,
-            PI.value/2
+            Math.PI/2
         )
         this.collision = new Box3(
             new Vector3().copy(this.center).sub(this.axisPlane),
@@ -73,24 +72,22 @@ export default class AxisRotation {
                 this.moveName = "ERROR"
         }
     }
-    
+
     /**
      * 
      */
-    rotate(rotationData, invert, double) {
-        const rquaternion = new Quaternion().copy(this.rotationQuaternion)
+    getQuaternion(invert, double) {
+        const quaternion = new Quaternion().copy(this.rotationQuaternion)
         if (invert^this.position>=0) {
-            rquaternion.invert()
+            quaternion.invert()
         }
         if (double || !this.square) {
-            rquaternion.premultiply(rquaternion)
+            quaternion.premultiply(quaternion)
         }
 
-        rotationData.forEach(({position, quaternion}) => {
-            position.applyQuaternion(rquaternion)
-            quaternion.premultiply(rquaternion)
-        });
-        
-        return this.moveName + (double||!this.square?"2":invert?"'":"")
+        return {
+            quaternion: quaternion,
+            moveName: this.moveName + (double||!this.square?"2":invert?"'":"")
+        }
     }
 }

@@ -9,6 +9,11 @@ export default function App() {
   const [rotationData, setRotationData] = useState([])
   const [dimensions, setDimensions] = useState([3, 3, 3])
 
+  const setDimensionsWrapper = (dimensions) => {
+    setDimensions(dimensions)
+    setRotationData([])
+  }
+
   const {scramble, solution, changed} = solveAndSimplify(rotationData)
   if (changed) {
     setRotationData(scramble)
@@ -20,7 +25,7 @@ export default function App() {
         <CubeRender dimensions={dimensions} rotationData={scramble} setRotationData={setRotationData} />
       </div>
       <aside id='data-container' >
-        <DataBar dimensions={dimensions} setDimensions={setDimensions} scramble={scramble} solution={solution} />
+        <DataBar dimensions={dimensions} setDimensions={setDimensionsWrapper} scramble={scramble} solution={solution} />
       </aside>
     </div>
   )

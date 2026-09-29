@@ -1,5 +1,7 @@
 import { Edges } from '@react-three/drei'
-import { forwardRef, useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { Quaternion } from 'three';
 
 // right, left, top, bottom, front, back
 const faceColors = ['blue', 'green', 'white', 'yellow', 'red', 'orange']
@@ -40,11 +42,14 @@ const CubeMesh = forwardRef(({ slicer }, ref) => {
 })
 
 function SingleCube({ position, slicer }) {
-    function isEdge(index) {
-        const axis = Math.floor(index/2) // 0-2
-        const side = index%2 // 0-1
-        return position[axis] === (side ? 0 : slicer.dimensions.getComponent(axis)-1)
-    }
+    const isEdge = useCallback(
+        (index) => {
+            const axis = Math.floor(index/2) // 0-2
+            const side = index%2 // 0-1
+            return position[axis] === (side ? 0 : slicer.dimensions.getComponent(axis)-1)
+        },
+        [position, slicer]
+    )
 
     return (
         <mesh position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>

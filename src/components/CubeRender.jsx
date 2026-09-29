@@ -20,7 +20,7 @@ export default function CubeRender({dimensions=[3, 3, 3], rotationData, setRotat
                 <OrbitControls enablePan={false} enableZoom={false} mouseButtons={{RIGHT: MOUSE.ROTATE}} />
                 <ambientLight intensity={2}/>
                 <CubeMesh slicer={slicer} ref={mesh}/>
-                <CubeControls slicer={slicer} meshRef={mesh} rotationData={rotationData} setRotationData={setRotationData} />
+                <CubeControls active={true} slicer={slicer} meshRef={mesh} rotationData={rotationData} setRotationData={setRotationData} />
             </Canvas>
         </div>
     )
