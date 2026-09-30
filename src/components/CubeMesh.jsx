@@ -1,7 +1,5 @@
 import { Edges } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber';
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { Quaternion } from 'three';
+import { forwardRef, useCallback, useMemo } from 'react';
 
 // right, left, top, bottom, front, back
 const faceColors = ['blue', 'green', 'white', 'yellow', 'red', 'orange']
@@ -52,7 +50,10 @@ function SingleCube({ position, slicer }) {
     )
 
     return (
-        <mesh position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}>
+        <mesh 
+        position={[slicer.xSlices[position[0]], slicer.ySlices[position[1]], slicer.zSlices[position[2]]]}
+        key={slicer.dimensions.toArray().join("")}
+        >
             <boxGeometry args={new Array(3).fill(slicer.sliceSize)} />
             {
                 faceColors.map((color, index) => (

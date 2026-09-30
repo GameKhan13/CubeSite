@@ -1,14 +1,21 @@
-
-
+/**
+ * converts a move name into an easily accessible format to look at individual elements
+ * @param name
+ */
 export default class RotationNotation {
     constructor(name) {
-        const match = name.match(/^(\d*)([a-zA-Z])(['2]?)$/)
+        /* match is: 
+            an optional number of any length if the following letter is not M, E or S
+            follwed by a single letter of (L, U, F, R, D, B, M, E, S)
+            then an optional ' or 2
+        */
+        const match = name.match(/^(?!\d+[MES])(\d*)([LUFRDBMES])(['2]?)/)
         if (match) {
             this.inset = match[1] || ""
             this.side = match[2]
             this.rotation = match[3] || ""
         } else {
-            console.log(name, "Invalid Name");
+            console.error(name, "Invalid Name");
             
             this.inset = ""
             this.side = "ERROR"
@@ -23,7 +30,8 @@ export default class RotationNotation {
     }
 
     /**
-     * 
+     * overwrites the rotation of this object
+     * @returns self
      */
     setRotation(rotation) {
         this.rotation = rotation
@@ -31,14 +39,13 @@ export default class RotationNotation {
     }
 
     /**
-     * 
+     * @returns a displayable string
      */
     toString() {
         return this.inset+this.side+this.rotation
     }
 
     /**
-     * 
      * @returns a clone of this object
      */
     clone() {
@@ -54,10 +61,10 @@ export default class RotationNotation {
      */
     fliped() {
         const clone = this.clone()
-        clone.rotation = 
+        return clone.setRotation(
             this.rotation==="2"?"2"
             :this.rotation==="'"?""
             :"'"
-        return clone
+        )
     }
 }
