@@ -25,7 +25,7 @@ const CubeMesh = forwardRef(({ slicer }, ref) => {
     )
 
     return (
-        <mesh ref={ref}>
+        <group ref={ref}>
             {
                 cubeCoords.map((position, index) => (
                 <SingleCube 
@@ -35,7 +35,7 @@ const CubeMesh = forwardRef(({ slicer }, ref) => {
                 />
                 ))
             }
-        </mesh>
+        </group>
     )
 })
 
