@@ -1,11 +1,21 @@
+/**
+ * A bare-bones simplifier for shortening the scramble and generating a solution
+ * @param {Array<RotationNotation>} scramble 
+ * @returns {{
+ *  scramble: Array<RotationNotation>, 
+ *  solution: Array<RotationNotation>, 
+ *  changed: bool
+ * }}
+ */
 export default function solveAndSimplify(scramble) {
     let newScramble = [...scramble]
-    let repass = true
-    let passCounter = 0
+    let changed = true // set to true to run loop at least once
+    let passCounter = 0 // the number of passes done (if more than one then changes were made)
 
-    while (repass) {
+    // pass over multiple times to check for cascading rules
+    while (changed) {
+        ({newScramble, changed} = singlePass(newScramble))
         passCounter += 1;
-        ({newScramble, repass} = singlePass(newScramble))
     }
 
     const solution = invert(newScramble)
@@ -17,13 +27,32 @@ export default function solveAndSimplify(scramble) {
     }
 }
 
+/**
+ * generates a solution for the given scramble
+ * reverses the array and inverts every move
+ * @param {Array<RotationNotation>} rotationData 
+ * @returns {Array<RotationNotation>}
+ */
+function invert(rotationData) {
+    return rotationData.toReversed().map((data) => data.fliped())
+}
+
+/**
+ * does a single pass over the array looking for rule hits
+ * simplifies the array if any hits
+ * @param {Array<RotationNotation>} scramble 
+ * @returns {{
+ *  newScramble: Array<RotationNotation>,
+ *  changed: bool
+ * }}
+ */
 function singlePass(scramble) {
     const newScramble = []
     let changed = false
-    let failed = []
+    let failed = [] // a list of failed checks incase of lookover checks passing
 
-    let comp = 0
-    let current = 1
+    let comp = 0 // the index of the scramble thats being compared against
+    let current = 1 // the index of the scramble thats being compared to
 
     // iterate through all valid pairs (-1 for the pair (end-1, end))
     while (comp < scramble.length-1) {
@@ -68,16 +97,22 @@ function singlePass(scramble) {
     }
 }
 
-function invert(rotationData) {
-    return rotationData.toReversed().map((data) => data.fliped())
-}
 
+/**
+ * checks over each rule for a hit on the given inputs
+ * if any rule hits returns the replacement for the input (if null replace with nothing)
+ * @param {RotationNotation} comp 
+ * @param {RotationNotation} current 
+ * @returns {{
+ *  hit: bool
+ *  replace: RotationNotation
+ * }}
+ */
 function simplify(comp, current) {
     const rules = [
         simplifyReverse,
         simplifyDouble,
-        simplifyToDouble,
-        simplifyReverseFromDouble
+        simplifyDoubleSingle
     ]
 
     // check all rules for possible simplification
@@ -99,6 +134,10 @@ function simplify(comp, current) {
     }
 }
 
+/*------------------------------------------------------
+    All of the simplification rules are defined below   
+------------------------------------------------------*/
+
 function simplifyReverse(comp, current) {
     const replace = null
     if (
@@ -118,16 +157,23 @@ function simplifyReverse(comp, current) {
 }
 
 function simplifyDouble(comp, current) {
-    const replace = comp.clone().setRotation("2")
+    const replaceA = null
+    const replaceB = comp.clone().setRotation("2")
     if (
         comp.inset === current.inset &&
         comp.side === current.side &&
-        comp.rotation === current.rotation &&
-        current.rotation === '2'
+        comp.rotation === current.rotation
     ) {
-        return  {
-            hit: true,
-            replace: replace
+        if (current.rotation === '2') {
+            return  {
+                hit: true,
+                replace: replaceA
+            }
+        } else {
+           return  {
+                hit: true,
+                replace: replaceB
+            } 
         }
     }
     return {
@@ -136,26 +182,7 @@ function simplifyDouble(comp, current) {
     }
 }
 
-function simplifyToDouble(comp, current) {
-    const replace = comp.clone().setRotation("2")
-    if (
-        comp.inset === current.inset &&
-        comp.side === current.side &&
-        comp.rotation === current.rotation &&
-        current.rotation != "2"
-    ) {
-        return  {
-            hit: true,
-            replace: replace
-        }
-    }
-    return {
-        hit: false,
-        replace: null
-    }
-}
-
-function simplifyReverseFromDouble(comp, current) {
+function simplifyDoubleSingle(comp, current) {
     const replaceA = comp.clone().setRotation("")
     const replaceB = comp.clone().setRotation("'")
     if (

@@ -4,7 +4,6 @@ import { Vector3 } from "three"
  * Compute heavy class for slicing the cube into segments, storing all results in this object
  * The slices are uniform cubes but conform to the bounds of (-1, -1, -1) to (1, 1, 1)
  * @param dimensions an array of three values representing the x, y, z dimensions of a cube
- * 
  */
 export default class Slicer {
     constructor(dimensions) {

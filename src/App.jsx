@@ -21,7 +21,7 @@ export default function App() {
 
   return (
     <div id='app-container'>
-      <div id='cube-container' key={dimensions.join('')}>
+      <div id='cube-container'>
         <CubeRender dimensions={dimensions} rotationData={scramble} setRotationData={setRotationData} />
       </div>
       <aside id='data-container' >

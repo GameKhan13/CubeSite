@@ -1,19 +1,13 @@
-# React + Vite
+# Cube Site
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a site made to model the popular puzzle: Rubik's Cube. It currently allows for roatations, a simple solver, and the ability to have 1-5 layers for each of the three dimensions
 
-Currently, two official plugins are available:
+# The Cube
+## How it works
+The Rubik's Cube is a puzzle that in the standard case is a 3x3x3 cube of smaller cubes that have a different color on each side. The goal is to make the colors on each side match by turning the layers of the puzzle.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## The Site
+This site so far contains the ability to change the dimensions of the cube to any number but is functionally limited to 1-5 layers <br><br>
+There is the ability to turn the layers of the cube as well along with basic animations to go with it
+<br><br>
+Additionally a barebones solver has been added to be able to return the cube back to the solved state. Be aware that it is not perfect and does not find the optimal solution at all

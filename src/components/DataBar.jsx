@@ -1,10 +1,7 @@
 
 import './DataBar.css'
-import RotationText from './RotationText'
 
 export default function DataBar ({dimensions, setDimensions, scramble, solution}) {
-
-
     return <div id='data-bar'>
         <div className='dimension-section'>
             <h2>Dimension</h2>
@@ -21,79 +18,61 @@ export default function DataBar ({dimensions, setDimensions, scramble, solution}
     </div>
 }
 
+function RotationText ({data}) {
+    return <p>
+        {data.map((notation, index) => {
+            return (index===0?"":", ") + notation.toString()
+        })}
+    </p>
+}
+
 function DimensionDisplay ({dimensions, setDimensions}) {
     return <div id='dimension-fields'>
-        <div className='dimension-column'>
-            <DimensionIncrimenter 
-            dimensions={dimensions} 
-            setDimensions={setDimensions} 
-            index={0}
-            />
-            {dimensions[0]}
-            <DimensionDecrimenter 
-            dimensions={dimensions}
-            setDimensions={setDimensions} 
-            index={0}
-            />
-        </div>
-        <div className='dimension-column'>
-            X
-        </div>
-        <div className='dimension-column'>
-            <DimensionIncrimenter 
-            dimensions={dimensions} 
-            setDimensions={setDimensions} 
-            index={1}
-            />
-            {dimensions[1]}
-            <DimensionDecrimenter 
-            dimensions={dimensions}
-            setDimensions={setDimensions} 
-            index={1}
-            />
-        </div>
-        <div className='dimension-column'>
-            X
-        </div>
-        <div className='dimension-column'>
-            <DimensionIncrimenter 
-            dimensions={dimensions} 
-            setDimensions={setDimensions} 
-            index={2}
-            />
-            {dimensions[2]}
-            <DimensionDecrimenter 
-            dimensions={dimensions}
-            setDimensions={setDimensions} 
-            index={2}
-            />
-        </div>
+        <DimensionColumn 
+        dimensions={dimensions}
+        setDimensions={setDimensions}
+        index={0}
+        />
+        <div className='dimension-column'>X</div>
+        <DimensionColumn 
+        dimensions={dimensions}
+        setDimensions={setDimensions}
+        index={1}
+        />
+        <div className='dimension-column'>X</div>
+        <DimensionColumn 
+        dimensions={dimensions}
+        setDimensions={setDimensions}
+        index={2}
+        />
     </div>
 }
 
-function DimensionIncrimenter ({dimensions, setDimensions, index}) {
-    const max = 5
-    const incriment = () => {
-        const newDimension = dimensions[index] + 1
-
-        if (newDimension <= max) {
-            const newDimensions = [...dimensions]
-            newDimensions[index] = newDimension
-            setDimensions(newDimensions)
-        }
-    }
-
-    return <button
-    onClick={incriment}
-    >+</button>
+function DimensionColumn({dimensions, setDimensions, index}) {
+    return <div className='dimension-column'>
+        <DimensionChangeButton 
+        dimensions={dimensions}
+        setDimensions={setDimensions} 
+        index={index}
+        delta={1}
+        >+</DimensionChangeButton>
+        {dimensions[index]}
+        <DimensionChangeButton 
+        dimensions={dimensions}
+        setDimensions={setDimensions} 
+        index={index}
+        delta={-1}
+        >-</DimensionChangeButton>
+    </div>
 }
 
-function DimensionDecrimenter ({dimensions, setDimensions, index}) {
+function DimensionChangeButton({dimensions, setDimensions, index, delta, children}) {
+    const max = 5
     const min = 1
-    const incriment = () => {
-        const newDimension = dimensions[index] - 1
+    const change = () => {
+        const newDimension = dimensions[index] + delta
 
-        if (newDimension >= min) {
+        if (newDimension <= max && newDimension >= min) {
             const newDimensions = [...dimensions]
             newDimensions[index] = newDimension
             setDimensions(newDimensions)
@@ -101,6 +80,6 @@ function DimensionDecrimenter ({dimensions, setDimensions, index}) {
     }
 
     return <button
-    onClick={incriment}
-    >-</button>
+    onClick={change}
+    >{children}</button>
 }
